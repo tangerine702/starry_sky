@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="cn">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>北斗七星关卡</title>
+  <style>
+    * {
+      margin: 0;
+
+    }
+
+    body{
+      background-color: #92aef5;
+    }
+    a{
+      text-decoration:none;
+    }
+    #imageFile,
+    #downloadLink {
+      display: none;
+    }
+
+    #operations {
+      padding: 10px 0;
+    }
+
+    .canvas-container {
+      width: 805px;
+      height: 805px;
+      margin-top: 10px;
+      padding: 5px;
+      border: 1px solid #b3acac;
+      background-color: #ccc;
+      box-shadow: 2px 2px 3px #737272;
+    }
+
+    body {
+      display: flex;
+    }
+
+    #two_context {
+      margin-left: 30px;
+    }
+
+    #two_context img {
+      display: block;
+    }
+
+    #two_context p {
+      font-size: 24px;
+    }
+
+    .title {
+      margin-top: 10px;
+      margin-bottom: 5px;
+    }
+
+    .fu_title {
+      padding-bottom: 16px;
+
+    }
+
+    #two_context a {
+      padding-top: 3px;
+      display: inline-block;
+    }
+
+    .point {
+      position: absolute;
+      border: 5px solid red;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="one_context">
+    <div id="operations">
+      <input type="button" id="straightLine" value="直线" />
+      <input type="button" id="image" value="导入图片" />
+      <input type="button" id="save" value="下载当前画板页面" />
+      <!-- <input type="button" id="redo" value="重做" /> -->
+      <input type="button" id="undo" value="撤销" />
+      <input type="button" id="clear" value="全部清除" />
+      <label>颜色：<input type="color" id="color" /></label>
+      <label>线条粗细：1<input type="range" id="lineWidth" min="1" max="10" value="1" />10</label>
+      <input type="file" id="imageFile" name="image" />
+      <a id="downloadLink"></a>
+      <p>*绘制TIPS:1.由右侧图示的勺口处<b>[天枢]</b>往勺柄处<b>[摇光]</b>依次绘制即可*</p>
+      <p>*TIPS:2.由天璇至天枢发射射线到最近的一颗<b>亮度较大的星</b>即可定位到<b>北极星</b>的位置*</p>
+    </div>
+    <div class="canvas-container">
+      <!-- <div class="point"></div> -->
+      <canvas id="canvas" width="800" height="800">
+      </canvas>
+
+    </div>
+  </div>
+  <div id="two_context">
+    <p class="title">北斗七星星象
+      <a href="/1.html" style="display: inline-block;">
+        <button id="back">返回主菜单</button>
+      </a>
+      <a href="/12.html" style="display: inline-block;">
+        <button id="next">下一关</button>
+      </a>
+    </p>
+
+
+    <img src="/img/北斗7星.jpg" />
+    <p>北斗七星:</p>
+    <a class="fu_title">*北半球天空的重要星象*</a>
+    <p></p>
+    <a>即使你不是天文爱好者，也肯定听到过<a href="https://baike.baidu.com/item/%E5%8C%97%E6%96%97%E4%B8%83%E6%98%9F/6031" title="北斗七星-百度百科" style="color: #2b79bd;" target="_Blank">“北斗七星”</a>的名字，有如此高的知名度也正适合拿来做初次见面的关卡。首先介绍以下整个星象的组成：它是由天枢、天璇、天玑、天权、玉衡、开阳、摇光（又称作瑶光）七颗星组成，
+      因北斗七星曲折如斗，故而得名。<br>
+    </a>
+    <a>紧接着当然要介绍她为什么会是北半球重要星象：当你夜晚在野外迷路时，挑选一块能最大限度看到完整天空的位置，朝天看去，能看到基本完整的北斗七星后，朝天璇至天枢
+      画一条射线，即可看到北极星，<b>面向北极星，你的正前方永远是北方</b></a>
+    <p></p>
+    <a>闪耀的星河中也会根据亮度排个等级；最容易肉眼观测、亮度最亮的称为“一等星”，最不容易肉眼观测的、亮度最暗的称为“三等星”,夹在中间的，便称为“二等星”，这个在描述任何星星的亮度时都能最直观的说清楚</a>
+    <a>据《晋书·天文志》记载，枢为天，璇为地，玑为人，权为时，衡为音，开阳为律，摇光为星。</a><br>
+
+    <a>下面大家可以观看前两张图片加深印象，选择第三张图右键保存到电脑上导入左边画板尝试根据画板上方TIPS的顺序描绘星座星象</a>
+
+    <input type="button" id="one_img" value="切换第一张图" >
+    <input type="button" id="two_img" value="切换第二张图" >
+    <input type="button" id="three_img" value="切换第三张图" >
+    <img src="/img/北斗七星2.png"/ id="img_pic">
+  </div>
+
+
+
+
+  <script>
+
+
+    class Draw {
+      constructor(elements) {
+        const { canvas, color, lineWidth, operations, imageFile, downloadLink } = elements; // 控制画布的元素
+        this.type = 'straightLine'; // 类型初始化为直线
+        this.canvas = canvas; // canvas元素
+        this.context = canvas.getContext('2d'); // 获取canvas的2d上下文对象
+        this.canvasWidth = canvas.width; // 画布的宽度
+        this.canvasHeight = canvas.height; // 画布的高度
+        this.canvasBackground = '#ffffff'; // 画布的背景色
+        this.isDrawing = false; // 是否在绘画中
+        this.color = color; // 处理颜色的DOM元素
+        this.lineWidth = lineWidth; // 处理线宽的DOM元素
+        this.operations = operations; // 包含所有操作的元素
+        this.imageFile = imageFile; // 用于倒入图片的文件元素
+        this.downloadLink = downloadLink; // 用于下载图片的元素
+        this.image = new Image(); // 绘制形状时用到
+        this.historyImage = new Image(); // 处理重做和撤销时用到
+        this.historyUrls = []; // 存放每一步的base64 url（只取最新的十条）
+        this.currentHistoryIndex = -1; // 当前历史记录的索引
+      }
+      init() {
+        let originX = null, originY = null; // 同于存放每次鼠标点击（mousedown）时的坐标
+        const { offsetLeft, offsetTop } = this.canvas;
+        this.clear(); // 给画布一个白色的背景
+
+        this.operations.addEventListener('click', (event) => {
+          const handleClick = this.handleOperations();
+          const handleCurrentClick = handleClick[event.target.id]; // 根据按下的操作按钮，选择不同的处理事件
+          handleCurrentClick && handleCurrentClick();
+        }, false);
+
+        this.canvas.addEventListener('mousedown', (event) => {
+          this.isDrawing = true;
+          this.image.src = this.canvas.toDataURL('image/png'); // 将当前图片转换为base64路径
+          const { clientX, clientY } = event;
+          originX = clientX - offsetLeft;
+          originY = clientY - offsetTop;
+          // 初始化context
+          this.context.moveTo(originX, originY);
+          this.context.lineWidth = this.lineWidth.value;
+          this.context.strokeStyle = this.color.value;
+          this.context.fillStyle = this.color.value;
+          this.context.beginPath();
+        }, false);
+
+        // 当鼠标从画布上离开或者鼠标放开时，当前这步绘画结束
+        this.canvas.addEventListener('mouseleave', () => { this.endOfDrawing(); }, false);
+
+        this.canvas.addEventListener('mouseup', () => { this.endOfDrawing(); }, false);
+
+        this.canvas.addEventListener('mousemove', (event) => {
+          if (this.isDrawing) {
+            const { clientX, clientY } = event;
+            const x = clientX - offsetLeft;
+            const y = clientY - offsetTop;
+            let newOriginX = originX, newOriginY = originY;
+            let distanceX = Math.abs(x - originX);
+            let distanceY = Math.abs(y - originY);
+
+            // 让形状左上角的坐标永远大于右下角坐标，保证图形能正常绘制
+            if (x < originX) newOriginX = x;
+            if (y < originY) newOriginY = y;
+
+            // (x, y)为鼠标移动的过程中在画布上的坐标，(originX, originY)为鼠标点击时在画布上的坐标，
+            //（newOriginX, newOriginY）为绘制形状（比如矩形）时形状左上角的坐标
+            const mousePosition = { x, y, originX, originY, newOriginX, newOriginY, distanceX, distanceY };
+            let handleMousemove = this.handleMousemove();
+            let currentHandleMousemove = handleMousemove[this.type]; // 根据当前类型的不同采取不同的操作
+            currentHandleMousemove && currentHandleMousemove(mousePosition);
+          }
+        }, false);
+      }
+      // 在绘制形状的过程中需要重新绘制，否则会画出移动过程中的图像
+      reDraw() {
+        this.context.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+        this.context.drawImage(this.image, 0, 0);
+        this.context.beginPath();
+      }
+      // 绘画结束
+      endOfDrawing() {
+        if (this.isDrawing) {
+          this.context.closePath();
+          this.isDrawing = false;
+          this.addHistory();
+        }
+      }
+      // 用背景色将画布填满
+      clear() {
+        this.context.fillStyle = this.canvasBackground;
+        this.context.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
+      }
+      // 添加历史记录
+      addHistory() {
+        let dataUrl = this.canvas.toDataURL('image/png');
+        this.historyUrls.push(dataUrl);
+        let length = this.historyUrls.length;
+        if (length > 10) {
+          this.historyUrls = this.historyUrls.slice(-10, length);
+        }
+        this.currentHistoryIndex = this.historyUrls.length - 1;
+      }
+      // 点击操作按钮时触发的事件
+      handleOperations() {
+        return {
+
+          straightLine: () => { this.type = 'straightLine'; }, // 直线按钮绑定的事件
+
+          clear: () => { this.clear(); }, // 清除按钮绑定的事件
+          image: () => { // 导入图片按钮绑定的事件
+            this.imageFile.click();
+            this.imageFile.onchange = (event) => {
+              let reader = new FileReader();
+              reader.readAsDataURL(event.target.files[0]);
+              reader.onload = (evt) => {
+                let img = new Image();
+                img.src = evt.target.result;
+                img.onload = () => {
+                  this.context.drawImage(img, 0, 0); // 将图片画在画布上
+                  this.addHistory();
+                };
+              }
+            }
+          },
+          save: () => { // 保存按钮绑定的事件
+            this.downloadLink.href = this.canvas.toDataURL('image/png');
+            this.downloadLink.download = 'drawing.png';
+            this.downloadLink.click();
+          },
+          redo: () => { // 重做按钮绑定的事件
+            let length = this.historyUrls.length;
+            let currentIndex = this.currentHistoryIndex + 1;
+            if (currentIndex > length - 1) {
+              this.currentHistoryIndex = length - 1;
+              return;
+            };
+            this.currentHistoryIndex = currentIndex;
+            this.historyImage.src = this.historyUrls[currentIndex];
+            this.historyImage.onload = () => {
+              this.context.drawImage(this.historyImage, 0, 0);
+            }
+          },
+          undo: () => { // 撤回按钮绑定的事件
+            let currentIndex = this.currentHistoryIndex - 1;
+            if (currentIndex < 0) {
+              currentIndex === -1 && this.clear();
+              this.currentHistoryIndex = -1;
+              return;
+            }
+            this.currentHistoryIndex = currentIndex;
+            this.historyImage.src = this.historyUrls[currentIndex];
+            this.historyImage.onload = () => {
+              this.context.drawImage(this.historyImage, 0, 0);
+            }
+          }
+        }
+      }
+      // 不同类型的操作绑定在mousemove上的事件
+      handleMousemove() {
+        return {
+
+          eraser: (mousePosition) => {
+            const { x, y } = mousePosition;
+            this.context.strokeStyle = this.canvasBackground;;
+            this.context.lineTo(x, y);
+            this.context.stroke();
+            this.context.strokeStyle = this.color.value;
+            this.context.fillStyle = this.color.value;
+          },
+          straightLine: (mousePosition) => {
+            let { x, y, originX, originY } = mousePosition;
+            this.reDraw();
+
+            this.context.moveTo(originX, originY);
+            this.context.lineTo(x, y);
+            this.context.stroke();
+
+            this.context.closePath();
+          },
+          rectangle: (mousePosition) => {
+            let { newOriginX, newOriginY, distanceX, distanceY } = mousePosition;
+            this.reDraw();
+            this.context.rect(newOriginX, newOriginY, distanceX, distanceY);
+            this.context.stroke();
+
+            this.context.closePath();
+          },
+
+
+
+          clear: () => {
+            this.clear();
+          }
+        }
+      }
+    }
+
+    window.onload = () => {
+      // 获取页面中的元素
+      const canvas = document.getElementById('canvas');
+      const color = document.getElementById('color');
+      const lineWidth = document.getElementById('lineWidth');
+      const operations = document.getElementById('operations');
+      const imageFile = document.getElementById('imageFile');
+      const downloadLink = document.getElementById('downloadLink');
+
+      const elements = {
+        canvas,
+        color,
+        lineWidth,
+        operations,
+        imageFile,
+        downloadLink
+      };
+      const draw = new Draw(elements);
+      draw.init();
+    };
+    
+    
+    function img(){
+      var img = new Image(); // 创建一个<img>元素
+      img.src = "https://pic3.zhimg.com/v2-6ac9f36b8052456da528a652ce3591e1_r.jpg?source=1940ef5c"; // 设置图片源地址
+      var ctx = canvas.getContext("2d");
+      img.onload = function () {
+      // 执行 drawImage 语句
+      ctx.drawImage(img, 0, 0);
+      };
+      
+      alert("图片插入");
+
+    }
+
+
+    function switch_img(){
+      var img = document.getElementById("img_pic");
+      if(document.getElementById="one_img"){
+        img.src="/img/北斗7星.jpg"
+      }else if(document.getElementById="two_img"){
+        img.src="/img/北斗七星3.jpg"
+      }else if(document.getElementById="three_img"){
+        img.src="/img/北斗七星图无标识.png"
+      }
+    }
+    var img = document.getElementById("img_pic");
+    one_img.onclick = function(){
+      img.src="/img/北斗七星2.png"
+    }
+    two_img.onclick = function(){
+      img.src="/img/北斗3.png"
+    }
+    three_img.onclick = function(){
+      img.src="/img/北斗七星图无标识.png"
+    }
+    
+  </script>
+</body>
+
+</html>
